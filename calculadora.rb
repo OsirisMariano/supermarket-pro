@@ -17,6 +17,14 @@ def pedir_numero(mensagem)
     puts "Erro: '#{entrada}' não é um número válido."
   end
 end
+
+def salvar_log(preco, desconto, resultado)
+  data_hora = Time.now.strftime("%d/%m/%Y %H:%M")
+
+  File.open("vendas.log", "a") do |arquivo|
+    arquivo.puts "[#{data_hora}] Venda: #{preco} | Desconto: #{desconto} | Total: #{format('%.2f', resultado)}"
+  end
+end
 loop do
   limpar_tela
   puts "\n --- Supermarket Pro ---"
@@ -27,7 +35,9 @@ loop do
   puts "-------------------------------------"
   puts "Sucesso! Valor final: #{format('%.2f', resultado)}"
   puts "-------------------------------------"
-
+  
+  salvar_log(preco, desconto, resultado)
+  
   print "\n desenja realizar outro cálculo? (S/N): "
   decisao = gets.chomp.downcase
 
