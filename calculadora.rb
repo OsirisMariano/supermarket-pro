@@ -34,33 +34,75 @@ def salvar_csv(preco, desconto, resultado)
   end
 end
 
+def executar_vendas
+  loop do
+    limpar_tela
+    puts " --- Área de Vendas ---"
+    
+    preco = pedir_numero("Digite o preço do produto: ")
+    desconto = pedir_numero("Digite a porcentagem do desconto (%): ")
+    resultado = Calculadora.aplicar_desconto(preco, desconto)
+        
+    salvar_log(preco, desconto, resultado)
+    salvar_csv(preco, desconto, resultado)
+        
+    print "\nDeseja realizar outro cálculo? (S/N): "
+    decisao = gets.chomp.downcase
+        
+    if decisao != 's' && decisao != 'sim'
+      break
+    end
+  end
+end
+
+def exibir_relatorio
+  limpar_tela
+  puts " === RELATÓRIO DE FATURAMENTO ==="
+  unless File.exist?("vendas.csv")
+    print "\nPressione Enter para voltar."
+    gets
+    return
+  end
+
+  faturamento_total = 0.0
+
+  File.foreach("vendas.csv") do |linha|
+    dados = linha.split(";")
+    valor_venda = dados[3].to_f
+    faturamento_total += valor_venda
+    puts "Venda: R$#{format('%.2f', valor_venda)} em #{dados[0]}"
+  end
+
+  puts "=========================================="
+  puts "FATURAMENTO TOTAL: R$ #{format('%.2f', faturamento_total)}"
+  puts "=========================================="
+  print "\nPressione Enter para voltar ao menu"
+  gets
+end
+
 # --- INÍCIO DA EXECUÇÃO ---
 loop do
   limpar_tela
-  puts "\n --- Supermarket Pro ---"
-  
-  preco     = pedir_numero("Digite o preço do produto: ")
-  desconto  = pedir_numero("Digite a porcentagem do desconto (%): ")
-  resultado = Calculadora.aplicar_desconto(preco, desconto)
+  puts " --- Menu Principal ---"
+  puts "1. Nova Venda"
+  puts "2. Ver Relatório de Fatuarmento"
+  puts "3. Sair"
+  print "Escolha uma opção: "
 
-  puts "-------------------------------------"
-  puts "✅ Sucesso! Valor final: R$ #{format('%.2f', resultado)}"
-  puts "-------------------------------------"
-  
-  salvar_log(preco, desconto, resultado)
-  salvar_csv(preco, desconto, resultado)
+  opcao = gets.chomp
 
-  print "\nDeseja realizar outro cálculo? (S/N): "
-  decisao = gets.chomp.downcase
-
-  if decisao == 'n' || decisao == 'não' || decisao == 'nao'
-    puts "\nEncerrando o sistema... Até logo!"
+  case opcao
+  when "1"
+    executar_vendas
+  when "2"
+    exibir_relatorio
+    # print "Pressione Enter para voltar."
+    gets
+  when "3"
+    puts "Encerramento sistema... Até logo!"
     break
-  elsif decisao == 's' || decisao == 'sim'
-    puts "Reiniciando..."
-    sleep 0.5
   else
-    puts "Opção inválida, encerrando por segurança."
-    break
+    puts "Opção inválida."
+    sleep 1
   end
 end
