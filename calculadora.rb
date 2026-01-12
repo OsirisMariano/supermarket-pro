@@ -2,13 +2,22 @@ require_relative 'lib/calculadora'
 require_relative 'lib/repositorio'
 
 VERDE = "\e[32m"
-VERMEHLO = "\e[31m"
+VERMELHO = "\e[31m"
 CIANO = "\e[36m"
 RESET = "\e[0m"
 
 # --- MÉTODOS DE INTERFACE ---
 def limpar_tela
   Gem.win_platform? ? system('cls') : system('clear')
+end
+
+def pedir_texto(mensagem)
+  loop do
+    print mensagem
+    entrada = gets.chomp.strip
+    return entrada unless entrada.empty?
+    puts "#{VERMELHO} O nome do produto não pode ficar em branco.#{RESET}"
+  end
 end
 
 def pedir_numero(mensagem)
@@ -33,20 +42,23 @@ def executar_vendas
     limpar_tela
     puts " --- Área de Vendas ---"
     
+    nome_produto = pedir_texto("Nome do Produto: ")
+    
     preco = pedir_numero("Digite o preço do produto: ")
     desconto = pedir_numero("Digite a porcentagem do desconto (%): ")
     
     resultado = Calculadora.aplicar_desconto(preco, desconto)
     
     puts "=========================================="
-    puts "Sucesso! Valor final: R$ #{format('%.2f', resultado)}"
-    Repositorio.salvar_log(preco, desconto, resultado)
-    Repositorio.salvar_csv(preco, desconto, resultado)
+    puts "#{VERDE}Sucesso!#{RESET} Produto: #{CIANO}#{nome_produto}#{RESET} Valor final: #{VERDE}R$ #{format('%.2f', resultado)}#{RESET}"
+    
+    Repositorio.salvar_log(nome_produto, preco, resultado)
+    Repositorio.salvar_csv(nome_produto, preco, desconto, resultado)
 
     print "\nDeseja realizar outro cálculo? (S/N): "
     decisao = gets.chomp.downcase
         
-    break if decisao != 's' && decisao != 'sim'
+    break unless ['s', 'sim'].include?(decisao)
   end
 end
 
